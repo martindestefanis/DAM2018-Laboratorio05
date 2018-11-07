@@ -14,6 +14,7 @@ import android.widget.TextView;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -53,5 +54,10 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         }
         miMapa.setMyLocationEnabled(true);
     }
+
+    public interface OnMapaListener {
+        public void coordenadasSeleccionadas(LatLng c);
+    }
+
 
 }

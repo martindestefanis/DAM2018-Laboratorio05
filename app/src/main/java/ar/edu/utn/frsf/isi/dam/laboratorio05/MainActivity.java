@@ -9,12 +9,14 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
 
+import com.google.android.gms.maps.model.LatLng;
+
 
 // AGREGAR en MapaFragment una interface MapaFragment.OnMapaListener con el método coordenadasSeleccionadas 
 // IMPLEMENTAR dicho método en esta actividad.
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener {
+        NuevoReclamoFragment.OnNuevoLugarListener,MapaFragment.OnMapaListener {
     private DrawerLayout drawerLayout;
     private NavigationView navView;
 
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                     }
                 });
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -127,7 +130,7 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     // pasando como argumento el objeto "LatLng" elegido por el usuario en el click largo
     // como ubicación del reclamo
 
-/*        @Override
+        @Override
         public void coordenadasSeleccionadas(LatLng c) {
             String tag = "nuevoReclamoFragment";
             Fragment fragment =  getSupportFragmentManager().findFragmentByTag(tag);
@@ -144,12 +147,24 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                     .commit();
 
         }
-    };
-*/
-
 
         @Override
         public void obtenerCoordenadas() {
+            String tag="mapaReclamos";
+            Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+            if(fragment==null) {
+                fragment = new MapaFragment();
+                ((MapaFragment) fragment).setListener(this);
+            }
+            Bundle bundle = new Bundle();
+            bundle.putInt("tipo_mapa",1);
+            fragment.setArguments(bundle);
+            getSupportFragmentManager()
+                    .beginTransaction()
+                    .replace(R.id.contenido, fragment,tag)
+                    .addToBackStack(null)
+                    .commit();
+
             // TODO: invocar el fragmento del mapa
             // pasando como parametro un bundle con "tipo_mapa"
             // para que el usuario vea el mapa y con el click largo pueda acceder
