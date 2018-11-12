@@ -11,10 +11,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.MyDatabase;
+import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.Reclamo;
+import ar.edu.utn.frsf.isi.dam.laboratorio05.modelo.ReclamoDao;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -25,6 +36,8 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     private int tipoMapa;
     private LatLng coordenadas;
     private OnMapaListener listener;
+    private ReclamoDao reclamoDAO;
+    private List<Reclamo> listaReclamos;
 
     public MapaFragment() {
         // Required empty public constructor
@@ -48,13 +61,16 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         miMapa = map;
         actualizarMapa();
 
-        if(tipoMapa == 1){
-            miMapa.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
-                @Override
-                public void onMapLongClick(LatLng latLng) {
-                    listener.coordenadasSeleccionadas(latLng);
-                }
-            });
+        switch (tipoMapa){
+            case 1:
+                miMapa.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+                    @Override
+                    public void onMapLongClick(LatLng latLng) {
+                        listener.coordenadasSeleccionadas(latLng);
+                    }
+                });
+            case 2:
+                cargarMapaConReclamos();
         }
     }
     private void actualizarMapa() {
@@ -67,6 +83,33 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
             return;
         }
         miMapa.setMyLocationEnabled(true);
+    }
+
+    private void cargarMapaConReclamos(){
+        reclamoDAO = MyDatabase.getInstance(getContext()).getReclamoDao();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                listaReclamos = reclamoDAO.getAll();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                        for(Reclamo r : listaReclamos){
+                            Marker marker = miMapa.addMarker(new MarkerOptions()
+                                                .position(new LatLng(r.getLatitud(),r.getLongitud()))
+                                                .title(r.getId() + "[" + r.getTipo().toString() + "]")
+                                                .snippet(r.getReclamo()));
+                            builder.include(marker.getPosition());
+                        }
+                        LatLngBounds LIMITE = builder.build();
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(LIMITE, 10));
+                    }
+                });
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
     }
 
     public interface OnMapaListener {

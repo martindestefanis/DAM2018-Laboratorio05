@@ -14,7 +14,7 @@ import com.google.android.gms.maps.model.LatLng;
 // IMPLEMENTAR dicho método en esta actividad.
 
 public class MainActivity extends AppCompatActivity implements FragmentManager.OnBackStackChangedListener,
-        NuevoReclamoFragment.OnNuevoLugarListener,MapaFragment.OnMapaListener{
+        NuevoReclamoFragment.OnNuevoLugarListener, MapaFragment.OnMapaListener{
     private DrawerLayout drawerLayout;
     private NavigationView navView;
 
@@ -126,38 +126,38 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
     // pasando como argumento el objeto "LatLng" elegido por el usuario en el click largo
     // como ubicación del reclamo
 
-        @Override
-        public void coordenadasSeleccionadas(LatLng c) {
-            String tag = "nuevoReclamoFragment";
-            Fragment fragment =  getSupportFragmentManager().findFragmentByTag(tag);
-            if(fragment==null) {
-                fragment = new NuevoReclamoFragment();
-                ((NuevoReclamoFragment) fragment).setListener(MainActivity.this);
-            }
-            Bundle bundle = new Bundle();
-	        bundle.putString("latLng",c.latitude+";"+c.longitude);
-            fragment.setArguments(bundle);
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.contenido, fragment,tag)
-                    .commit();
+    @Override
+    public void coordenadasSeleccionadas(LatLng c) {
+        String tag = "nuevoReclamoFragment";
+        Fragment fragment =  getSupportFragmentManager().findFragmentByTag(tag);
+        if(fragment==null) {
+            fragment = new NuevoReclamoFragment();
+            ((NuevoReclamoFragment) fragment).setListener(MainActivity.this);
         }
+        Bundle bundle = new Bundle();
+        bundle.putString("latLng",c.latitude+";"+c.longitude);
+        fragment.setArguments(bundle);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, fragment,tag)
+                .commit();
+    }
 
-        @Override
-        public void obtenerCoordenadas() {
-            String tag="mapaReclamos";
-            Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
-            if(fragment==null) {
-                fragment = new MapaFragment();
-                ((MapaFragment) fragment).setListener(this);
-            }
-            Bundle bundle = new Bundle();
-            bundle.putInt("tipo_mapa", 1);
-            fragment.setArguments(bundle);
-            getSupportFragmentManager()
-                    .beginTransaction()
-                    .replace(R.id.contenido, fragment,tag)
-                    .addToBackStack(null)
-                    .commit();
+    @Override
+    public void obtenerCoordenadas() {
+        String tag="mapaReclamos";
+        Fragment fragment = getSupportFragmentManager().findFragmentByTag(tag);
+        if(fragment==null) {
+            fragment = new MapaFragment();
+            ((MapaFragment) fragment).setListener(this);
         }
+        Bundle bundle = new Bundle();
+        bundle.putInt("tipo_mapa", 1);
+        fragment.setArguments(bundle);
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, fragment,tag)
+                .addToBackStack(null)
+                .commit();
+    }
 }
