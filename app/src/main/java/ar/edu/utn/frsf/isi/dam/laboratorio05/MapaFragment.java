@@ -3,6 +3,7 @@ package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,9 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -38,6 +42,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     private OnMapaListener listener;
     private ReclamoDao reclamoDAO;
     private List<Reclamo> listaReclamos;
+    private int idReclamo;
 
     public MapaFragment() {
         // Required empty public constructor
@@ -49,9 +54,11 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View rootView = super.onCreateView(inflater, container, savedInstanceState);
         tipoMapa = 0;
+        idReclamo=0;
         Bundle argumentos = getArguments();
         if(argumentos != null) {
             tipoMapa = argumentos.getInt("tipo_mapa",0);
+            idReclamo=argumentos.getInt("idReclamo",0);
         }
         getMapAsync(this);
         return rootView;
@@ -69,8 +76,13 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                         listener.coordenadasSeleccionadas(latLng);
                     }
                 });
+                break;
             case 2:
                 cargarMapaConReclamos();
+                break;
+            case 3:
+                cargarMapaConUnReclamo(idReclamo);
+                break;
         }
     }
     private void actualizarMapa() {
@@ -104,6 +116,38 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                         }
                         LatLngBounds LIMITE = builder.build();
                         miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(LIMITE, 10));
+                    }
+                });
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
+    }
+    public void cargarMapaConUnReclamo(final int idReclamo){
+        reclamoDAO = MyDatabase.getInstance(getContext()).getReclamoDao();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                final Reclamo unReclamo = reclamoDAO.getById(idReclamo);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        miMapa.addMarker(new MarkerOptions()
+                                .position(new LatLng(unReclamo.getLatitud(),unReclamo.getLongitud()))
+                                .title(unReclamo.getId() + "[" + unReclamo.getTipo().toString() + "]")
+                                .snippet(unReclamo.getReclamo()));
+                        CameraPosition cameraPosition = new CameraPosition.Builder()
+                                .target(new LatLng(unReclamo.getLatitud(),unReclamo.getLongitud()))
+                                .zoom(15)
+                                .build();
+                        CircleOptions circleOptions = new CircleOptions()
+                                .center(new LatLng(unReclamo.getLatitud(),unReclamo.getLongitud()))
+                                .radius(500)
+                                .strokeColor(Color.RED)
+                                .fillColor(0x220000FF)
+                                .strokeWidth(5);
+                        Circle circle = miMapa.addCircle(circleOptions);
+                        miMapa.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
                     }
                 });
             }
