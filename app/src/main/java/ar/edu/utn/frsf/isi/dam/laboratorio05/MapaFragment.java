@@ -23,6 +23,9 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.TileOverlay;
+import com.google.android.gms.maps.model.TileOverlayOptions;
+import com.google.maps.android.heatmaps.HeatmapTileProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +46,8 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     private ReclamoDao reclamoDAO;
     private List<Reclamo> listaReclamos;
     private int idReclamo;
+    private HeatmapTileProvider mProvider;
+    private TileOverlay mOverlay;
 
     public MapaFragment() {
         // Required empty public constructor
@@ -82,6 +87,9 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                 break;
             case 3:
                 cargarMapaConUnReclamo(idReclamo);
+                break;
+            case 4:
+                addHeatMap();
                 break;
         }
     }
@@ -155,7 +163,29 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         Thread t = new Thread(r);
         t.start();
     }
+    private void addHeatMap(){
+        reclamoDAO = MyDatabase.getInstance(getContext()).getReclamoDao();
 
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                listaReclamos = reclamoDAO.getAll();
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        List<LatLng> list = new ArrayList<>();
+                        for(Reclamo r : listaReclamos){
+                            list.add(new LatLng(r.getLatitud(),r.getLongitud()));
+                        }
+                        mProvider = new HeatmapTileProvider.Builder().data(list).build();
+                        mOverlay = miMapa.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+                    }
+                });
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
+    }
     public interface OnMapaListener {
         public void coordenadasSeleccionadas(LatLng c);
     }
