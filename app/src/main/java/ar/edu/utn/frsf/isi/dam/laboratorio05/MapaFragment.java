@@ -23,6 +23,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.maps.model.TileOverlay;
 import com.google.android.gms.maps.model.TileOverlayOptions;
 import com.google.maps.android.heatmaps.HeatmapTileProvider;
@@ -48,6 +50,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
     private int idReclamo;
     private HeatmapTileProvider mProvider;
     private TileOverlay mOverlay;
+    private String reclamoTipo;
 
     public MapaFragment() {
         // Required empty public constructor
@@ -64,6 +67,7 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
         if(argumentos != null) {
             tipoMapa = argumentos.getInt("tipo_mapa",0);
             idReclamo=argumentos.getInt("idReclamo",0);
+            reclamoTipo=argumentos.getString("tipoReclamo",null);
         }
         getMapAsync(this);
         return rootView;
@@ -90,6 +94,9 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                 break;
             case 4:
                 addHeatMap();
+                break;
+            case 5:
+                cargarMapaConReclamosDeUnTipo(reclamoTipo);
                 break;
         }
     }
@@ -179,6 +186,38 @@ public class MapaFragment extends SupportMapFragment implements OnMapReadyCallba
                         }
                         mProvider = new HeatmapTileProvider.Builder().data(list).build();
                         mOverlay = miMapa.addTileOverlay(new TileOverlayOptions().tileProvider(mProvider));
+                    }
+                });
+            }
+        };
+        Thread t = new Thread(r);
+        t.start();
+    }
+
+    private void cargarMapaConReclamosDeUnTipo(final String reclamoTipo){
+        reclamoDAO = MyDatabase.getInstance(getContext()).getReclamoDao();
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                listaReclamos = reclamoDAO.getByTipo(reclamoTipo);
+                getActivity().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                        PolylineOptions rectOptions = new PolylineOptions();
+                        for(Reclamo r : listaReclamos){
+                            Marker marker = miMapa.addMarker(new MarkerOptions()
+                                    .position(new LatLng(r.getLatitud(),r.getLongitud()))
+                                    .title(r.getId() + "[" + r.getTipo().toString() + "]")
+                                    .snippet(r.getReclamo()));
+                            builder.include(marker.getPosition());
+
+                            LatLng punto = new LatLng(r.getLatitud(),r.getLongitud());
+                            rectOptions.add(punto).color(Color.RED);
+                        }
+                        LatLngBounds LIMITE = builder.build();
+                        Polyline polyline = miMapa.addPolyline(rectOptions);
+                        miMapa.moveCamera(CameraUpdateFactory.newLatLngBounds(LIMITE, 10));
                     }
                 });
             }

@@ -40,23 +40,49 @@ public class FormularioFragment extends Fragment {
         buscar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                public void mostrarMapa(int id) {
-                Fragment f = new MapaFragment();
-                Bundle args = new Bundle();
-                // setear los parametros tipo_mapa y idReclamo en el Bundle args
-                args.putInt("tipo_mapa", 5);
-                args.putString("tipoReclamo", tipoReclamo.getSelectedItem().toString()); //VER
-                f.setArguments(args);
-                getActivity().getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.contenido, f)
-                        .commit();
-                }
+                String reclamoTipo = tipoReclamo.getSelectedItem().toString();
+                mostrarMapa(reclamoTipo);
             }
         });
+
+
+
+
+
+
+       /* buscar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                public void mostrarMapa(int id) {
+                    Fragment f = new MapaFragment();
+                    Bundle args = new Bundle();
+                    // setear los parametros tipo_mapa y idReclamo en el Bundle args
+                    args.putInt("tipo_mapa", 5);
+                    args.putString("tipoReclamo", tipoReclamo.getSelectedItem().toString()); //VER
+                    f.setArguments(args);
+                    getActivity().getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.contenido, f)
+                            .commit();
+                }
+            }
+        });*/
 
         return v;
 
     }
+    public void mostrarMapa(String reclamoTipo) {
+        Fragment f = new MapaFragment();
+        Bundle args = new Bundle();
+        // setear los parametros tipo_mapa y idReclamo en el Bundle args
+        args.putInt("tipo_mapa", 5);
+        args.putString("tipoReclamo", reclamoTipo); //VER
+        f.setArguments(args);
+        getActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contenido, f)
+                .commit();
+    }
+
 
 }

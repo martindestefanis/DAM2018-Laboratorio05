@@ -87,6 +87,13 @@ public class MainActivity extends AppCompatActivity implements FragmentManager.O
                                 fragment.setArguments(bundle1);
                                 fragmentTransaction = true;
                                 break;
+
+                            case R.id.optFormulario:
+                                tag = "formularioFragment";
+                                fragment =  getSupportFragmentManager().findFragmentByTag(tag);
+                                if(fragment==null) fragment = new FormularioFragment();
+                                fragmentTransaction = true;
+                                break;
                         }
 
                         if(fragmentTransaction) {
