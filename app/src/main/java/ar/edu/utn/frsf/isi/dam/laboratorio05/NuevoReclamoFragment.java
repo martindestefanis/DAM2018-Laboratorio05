@@ -3,12 +3,9 @@ package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.Path;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Message;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
@@ -21,7 +18,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,8 +54,6 @@ public class NuevoReclamoFragment extends Fragment {
     private OnNuevoLugarListener listener;
     private ImageView imagen;
     private String pathFoto;
-    static final int REQUEST_IMAGE_CAPTURE = 1;
-    static final int REQUEST_IMAGE_SAVE = 2;
 
     private ArrayAdapter<Reclamo.TipoReclamo> tipoReclamoAdapter;
 
@@ -183,6 +177,7 @@ public class NuevoReclamoFragment extends Fragment {
                         mail.setText(R.string.texto_vacio);
                         tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
+                        imagen.setImageResource(0);
                         getActivity().getFragmentManager().popBackStack();
                     }
                 });
@@ -194,7 +189,6 @@ public class NuevoReclamoFragment extends Fragment {
 
     private void sacarGuardarFoto() {
         Intent camaraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        //File imagenPath = getActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File picFile = null;
         try {
             picFile = createImageFile();
@@ -211,10 +205,6 @@ public class NuevoReclamoFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if(resultCode == RESULT_OK){
             if(requestCode == REQUEST_CAMERA_CODE){
-                /*Bitmap bitmap = (Bitmap) data.getExtras().get("data");
-                imagen.setImageBitmap(bitmap);
-                Toast.makeText(getActivity().getApplicationContext(), "Imagen guardada", Toast.LENGTH_SHORT).show();*/
-
                 File file = new File(pathFoto);
                 Bitmap imageBitmap = null;
                 try {
@@ -231,24 +221,6 @@ public class NuevoReclamoFragment extends Fragment {
         }
     }
 
-    /*private void sacarGuardarFoto() {
-        Intent camaraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (camaraIntent.resolveActivity(getActivity().getPackageManager()) != null) {
-            File fotoFile = null;
-            try {
-                fotoFile = createImageFile();
-            } catch (IOException ex) {
-            }
-            if (fotoFile != null) {
-                Uri uri = FileProvider.getUriForFile(getActivity().getApplicationContext(),
-                        getActivity().getApplicationContext().getPackageName() + ".provider",
-                        fotoFile);
-                camaraIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
-                startActivityForResult(camaraIntent, REQUEST_IMAGE_SAVE);
-            }
-        }
-    }*/
-
     private File createImageFile() throws IOException {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
                 .format(new Date());
@@ -262,22 +234,4 @@ public class NuevoReclamoFragment extends Fragment {
         pathFoto = image.getAbsolutePath();
         return image;
     }
-
-    /*@Override
-    public void onActivityResult(int reqCode, int resCode, Intent data) {
-        if (reqCode == REQUEST_IMAGE_SAVE && resCode == RESULT_OK) {
-            File file = new File(pathFoto);
-            Bitmap imageBitmap = null;
-            try {
-                imageBitmap = MediaStore.Images.Media
-                        .getBitmap(getActivity().getContentResolver(),
-                                Uri.fromFile(file));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            if (imageBitmap != null) {
-                imagen.setImageBitmap(imageBitmap);
-            }
-        }
-    }*/
 }
