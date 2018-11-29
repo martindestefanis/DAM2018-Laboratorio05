@@ -17,6 +17,7 @@ public class Reclamo {
     private String reclamo;
     private String email;
     private String pathFoto;
+    private String pathAudio;
     @TypeConverters(TipoReclamoConverter.class)
     private TipoReclamo tipo;
 
@@ -74,5 +75,13 @@ public class Reclamo {
 
     public void setPathFoto(String pathFoto) {
         this.pathFoto = pathFoto;
+    }
+
+    public String getPathAudio() {
+        return pathAudio;
+    }
+
+    public void setPathAudio(String pathAudio) {
+        this.pathAudio = pathAudio;
     }
 }
