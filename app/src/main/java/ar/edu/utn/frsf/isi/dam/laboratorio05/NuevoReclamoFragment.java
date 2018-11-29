@@ -18,12 +18,14 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +70,7 @@ public class NuevoReclamoFragment extends Fragment {
     private MediaPlayer mPlayer = null;
     private Boolean grabando = false;
     private Boolean reproduciendo = false;
+    private Reclamo.TipoReclamo tipo;
 
     private ArrayAdapter<Reclamo.TipoReclamo> tipoReclamoAdapter;
 
@@ -110,6 +113,75 @@ public class NuevoReclamoFragment extends Fragment {
         mail.setEnabled(edicionActivada);
         tipoReclamo.setEnabled(edicionActivada);
         btnGuardar.setEnabled(edicionActivada);
+
+
+        tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+            @Override
+            public void onItemSelected(AdapterView<?> arg0, View arg1,
+                                       int position, long id) {
+                switch(Reclamo.TipoReclamo.) {
+                    case 0:
+                        button0.setClickable(true);
+                        button1.setClickable(false);
+                        break;
+                    case 1:
+                        button0.setClickable(false);
+                        button1.setClickable(true);
+                        break;
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> arg0) {
+                // TODO Auto-generated method stub
+            }});
+
+        /*tipoReclamo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
+                    btnGuardar.setClickable(false);
+                }
+            }
+        });
+
+
+      /*  tipoReclamo.setOnItemClickListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent,
+                                       View view, int position, long id) {
+                if (tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)) {
+                    btnGuardar.setClickable(false);
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+       /* tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                /*if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO) || tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS)){
+                    if(imagen.getDrawable()==null){
+                        btnGuardar.setEnabled(false);
+                    }
+                }*/
+
+           /*     tipo = (Reclamo.TipoReclamo) parent.getItemAtPosition(position);
+                if(tipo.toString().equals(Reclamo.TipoReclamo.VEREDAS) || tipo.toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
+                    if(imagen.getDrawable()==null){
+                        btnGuardar.setEnabled(false);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });*/
 
         buscarCoord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -243,7 +315,7 @@ public class NuevoReclamoFragment extends Fragment {
                         mail.setText(R.string.texto_vacio);
                         tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
-                        imagen.setImageResource(0);
+                        imagen.setImageDrawable(null);
                         getActivity().getFragmentManager().popBackStack();
                     }
                 });
@@ -283,6 +355,9 @@ public class NuevoReclamoFragment extends Fragment {
                 }
                 if (imageBitmap != null) {
                     imagen.setImageBitmap(imageBitmap);
+                }
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO) || tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS)){
+                    btnGuardar.setEnabled(true);
                 }
             }
         }
