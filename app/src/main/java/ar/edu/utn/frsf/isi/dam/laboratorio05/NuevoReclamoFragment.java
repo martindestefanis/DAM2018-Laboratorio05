@@ -66,7 +66,6 @@ public class NuevoReclamoFragment extends Fragment {
     private String pathAudio;
     private MediaRecorder mRecorder = null;
     private MediaPlayer mPlayer = null;
-    private String mFileName;
     private Boolean grabando = false;
     private Boolean reproduciendo = false;
 
@@ -94,7 +93,6 @@ public class NuevoReclamoFragment extends Fragment {
         imagen = (ImageView) v.findViewById(R.id.imageView);
         btnGrabar = (Button) v.findViewById(R.id.btnGrabar);
         btnReproducir = (Button) v.findViewById(R.id.btnReproducir);
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath()+"/audiorecordtest.3gp";
 
         tipoReclamoAdapter = new ArrayAdapter<Reclamo.TipoReclamo>(getActivity(), android.R.layout.simple_spinner_item, Reclamo.TipoReclamo.values());
         tipoReclamoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -205,6 +203,7 @@ public class NuevoReclamoFragment extends Fragment {
                             if (imageBitmap != null) {
                                 imagen.setImageBitmap(imageBitmap);
                             }
+                            pathAudio = reclamoActual.getPathAudio();
                         }
                     });
                 }
@@ -230,7 +229,7 @@ public class NuevoReclamoFragment extends Fragment {
             reclamoActual.setLongitud(Double.valueOf(coordenadas[1]));
         }
         reclamoActual.setPathFoto(pathFoto);
-        reclamoActual.setPathAudio(mFileName);
+        reclamoActual.setPathAudio(pathAudio);
         Runnable hiloActualizacion = new Runnable() {
             @Override
             public void run() {
@@ -303,12 +302,29 @@ public class NuevoReclamoFragment extends Fragment {
         return image;
     }
 
-    private void grabar(){
+    private void createAudioPath() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        String audioFileName = "3GP_" + timeStamp + "_";
+        File dir = getActivity().getExternalFilesDir(Environment.getExternalStorageDirectory().getAbsolutePath());
+        File audio = File.createTempFile(
+                audioFileName, /* prefix */
+                ".3gp", /* suffix */
+                dir /* directory */
+        );
+        pathAudio = audio.getAbsolutePath();
+    }
+
+    private void grabar() {
+        try {
+            createAudioPath();
+        }
+        catch (IOException ex) { }
         mRecorder = new MediaRecorder();
         mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-        mRecorder.setOutputFile(mFileName);
+        mRecorder.setOutputFile(pathAudio);
         try {
             mRecorder.prepare();
         } catch (IOException e) {
@@ -326,7 +342,7 @@ public class NuevoReclamoFragment extends Fragment {
     private void reproducir() {
         mPlayer = new MediaPlayer();
         try {
-            mPlayer.setDataSource(mFileName);
+            mPlayer.setDataSource(pathAudio);
             mPlayer.prepare();
             mPlayer.start();
         } catch (IOException e) {
