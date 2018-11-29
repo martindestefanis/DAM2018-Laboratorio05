@@ -1,14 +1,20 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,6 +38,7 @@ public class NuevoReclamoFragment extends Fragment {
 
     public static final int REQUEST_CAMERA_CODE = 1995;
     public static final int RESULT_OK = -1;
+    private static final String LOG_TAG = "Grabar";
 
     public interface OnNuevoLugarListener {
         public void obtenerCoordenadas();
@@ -51,9 +58,16 @@ public class NuevoReclamoFragment extends Fragment {
     private Button buscarCoord;
     private Button btnGuardar;
     private Button btnFoto;
+    private Button btnGrabar;
+    private Button btnReproducir;
     private OnNuevoLugarListener listener;
     private ImageView imagen;
     private String pathFoto;
+    private String pathAudio;
+    private MediaRecorder mRecorder = null;
+    private MediaPlayer mPlayer = null;
+    private Boolean grabando = false;
+    private Boolean reproduciendo = false;
 
     private ArrayAdapter<Reclamo.TipoReclamo> tipoReclamoAdapter;
 
@@ -77,6 +91,8 @@ public class NuevoReclamoFragment extends Fragment {
         btnGuardar = (Button) v.findViewById(R.id.btnGuardar);
         btnFoto = (Button) v.findViewById(R.id.btnFoto);
         imagen = (ImageView) v.findViewById(R.id.imageView);
+        btnGrabar = (Button) v.findViewById(R.id.btnGrabar);
+        btnReproducir = (Button) v.findViewById(R.id.btnReproducir);
 
         tipoReclamoAdapter = new ArrayAdapter<Reclamo.TipoReclamo>(getActivity(), android.R.layout.simple_spinner_item, Reclamo.TipoReclamo.values());
         tipoReclamoAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -88,7 +104,6 @@ public class NuevoReclamoFragment extends Fragment {
         }
 
         cargarReclamo(idReclamo);
-
 
         boolean edicionActivada = !tvCoord.getText().toString().equals("0;0");
         reclamoDesc.setEnabled(edicionActivada);
@@ -117,6 +132,43 @@ public class NuevoReclamoFragment extends Fragment {
                 sacarGuardarFoto();
             }
         });
+
+        btnGrabar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(grabando){
+                    ((Button) btnGrabar).setText("GRABAR");
+                    grabando=false;
+                    terminarGrabar();
+                }
+                else {
+                    ((Button) btnGrabar).setText("GRABANDO");
+                    grabando = true;
+                    if (ActivityCompat.checkSelfPermission(getContext(),Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+                        ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.RECORD_AUDIO},9999);
+                    }
+                    else{
+                        grabar();
+                    }
+                }
+            }
+        });
+
+        btnReproducir.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(reproduciendo){
+                    ((Button) btnReproducir).setText("REPRODUCIR");
+                    reproduciendo=false;
+                    terminarReproducir();
+                }
+                else{
+                    ((Button) btnReproducir).setText("PAUSAR");
+                    reproduciendo=true;
+                    reproducir();
+                }
+            }
+        });
         return v;
     }
 
@@ -139,6 +191,19 @@ public class NuevoReclamoFragment extends Fragment {
                                     break;
                                 }
                             }
+                            File file = new File(reclamoActual.getPathFoto());
+                            Bitmap imageBitmap = null;
+                            try {
+                                imageBitmap = MediaStore.Images.Media
+                                        .getBitmap(getActivity().getContentResolver(),
+                                                Uri.fromFile(file));
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            if (imageBitmap != null) {
+                                imagen.setImageBitmap(imageBitmap);
+                            }
+                            pathAudio = reclamoActual.getPathAudio();
                         }
                     });
                 }
@@ -164,6 +229,7 @@ public class NuevoReclamoFragment extends Fragment {
             reclamoActual.setLongitud(Double.valueOf(coordenadas[1]));
         }
         reclamoActual.setPathFoto(pathFoto);
+        reclamoActual.setPathAudio(pathAudio);
         Runnable hiloActualizacion = new Runnable() {
             @Override
             public void run() {
@@ -200,6 +266,7 @@ public class NuevoReclamoFragment extends Fragment {
         camaraIntent.setFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
         startActivityForResult(camaraIntent, REQUEST_CAMERA_CODE);
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -233,5 +300,58 @@ public class NuevoReclamoFragment extends Fragment {
         );
         pathFoto = image.getAbsolutePath();
         return image;
+    }
+
+    private void createAudioPath() throws IOException {
+        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss")
+                .format(new Date());
+        String audioFileName = "3GP_" + timeStamp + "_";
+        File dir = getActivity().getExternalFilesDir(Environment.getExternalStorageDirectory().getAbsolutePath());
+        File audio = File.createTempFile(
+                audioFileName, /* prefix */
+                ".3gp", /* suffix */
+                dir /* directory */
+        );
+        pathAudio = audio.getAbsolutePath();
+    }
+
+    private void grabar() {
+        try {
+            createAudioPath();
+        }
+        catch (IOException ex) { }
+        mRecorder = new MediaRecorder();
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+        mRecorder.setOutputFile(pathAudio);
+        try {
+            mRecorder.prepare();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed --- ERROR: " + e);
+        }
+        mRecorder.start();
+    }
+
+    private void terminarGrabar(){
+        mRecorder.stop();
+        mRecorder.release();
+        mRecorder = null;
+    }
+
+    private void reproducir() {
+        mPlayer = new MediaPlayer();
+        try {
+            mPlayer.setDataSource(pathAudio);
+            mPlayer.prepare();
+            mPlayer.start();
+        } catch (IOException e) {
+            Log.e(LOG_TAG, "prepare() failed");
+        }
+    }
+
+    private void terminarReproducir() {
+        mPlayer.release();
+        mPlayer = null;
     }
 }
