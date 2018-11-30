@@ -14,16 +14,20 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -68,6 +72,7 @@ public class NuevoReclamoFragment extends Fragment {
     private MediaPlayer mPlayer = null;
     private Boolean grabando = false;
     private Boolean reproduciendo = false;
+    private Reclamo.TipoReclamo tipo;
 
     private ArrayAdapter<Reclamo.TipoReclamo> tipoReclamoAdapter;
 
@@ -77,8 +82,7 @@ public class NuevoReclamoFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         reclamoDao = MyDatabase.getInstance(this.getActivity()).getReclamoDao();
 
         View v = inflater.inflate(R.layout.fragment_nuevo_reclamo, container, false);
@@ -111,6 +115,60 @@ public class NuevoReclamoFragment extends Fragment {
         tipoReclamo.setEnabled(edicionActivada);
         btnGuardar.setEnabled(edicionActivada);
 
+        reclamoDesc.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(reclamoDesc.getText().length()>=8 && (!tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) &&
+                        !tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString()))){
+                    btnGuardar.setEnabled(true);
+                }
+                else{
+                    if((pathAudio == null )){
+                        btnGuardar.setEnabled(false);
+                    }
+
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                        tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
+                    if(imagen.getDrawable()==null){
+                        btnGuardar.setEnabled(false);
+                    }
+                    else{
+                        btnGuardar.setEnabled(true);
+                    }
+                }
+                else{
+                    if(reclamoDesc.getText().length()<8 && pathAudio == null){
+                        Log.d("Spinner", "Entro if: "+"tam: "+reclamoDesc.getText().length()+" -- path: "+ pathAudio);
+                        btnGuardar.setEnabled(false);
+                    }
+                    else{
+                        Log.d("Spinner", "No Entro if: "+"tam: "+reclamoDesc.getText().length()+" -- path: "+ pathAudio);
+                        btnGuardar.setEnabled(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
         buscarCoord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -132,6 +190,7 @@ public class NuevoReclamoFragment extends Fragment {
                 sacarGuardarFoto();
             }
         });
+
 
         btnGrabar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -163,8 +222,6 @@ public class NuevoReclamoFragment extends Fragment {
                     terminarReproducir();
                 }
                 else{
-                    ((Button) btnReproducir).setText("PAUSAR");
-                    reproduciendo=true;
                     reproducir();
                 }
             }
@@ -243,7 +300,8 @@ public class NuevoReclamoFragment extends Fragment {
                         mail.setText(R.string.texto_vacio);
                         tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
-                        imagen.setImageResource(0);
+                        imagen.setImageDrawable(null);
+                        pathAudio = null;
                         getActivity().getFragmentManager().popBackStack();
                     }
                 });
@@ -283,6 +341,10 @@ public class NuevoReclamoFragment extends Fragment {
                 }
                 if (imageBitmap != null) {
                     imagen.setImageBitmap(imageBitmap);
+                }
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                        tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
+                    btnGuardar.setEnabled(true);
                 }
             }
         }
@@ -337,16 +399,27 @@ public class NuevoReclamoFragment extends Fragment {
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
+        if(!tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                !tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
+            btnGuardar.setEnabled(true);
+        }
     }
 
     private void reproducir() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(pathAudio);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+        if(pathAudio==null){
+            Toast.makeText(getActivity().getApplicationContext(), "Error, no hay audio para reproducir", Toast.LENGTH_LONG).show();
+        }
+        else{
+            ((Button) btnReproducir).setText("PARAR");
+            reproduciendo=true;
+            mPlayer = new MediaPlayer();
+            try {
+                mPlayer.setDataSource(pathAudio);
+                mPlayer.prepare();
+                mPlayer.start();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "prepare() failed");
+            }
         }
     }
 
