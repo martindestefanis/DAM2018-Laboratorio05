@@ -16,6 +16,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    testOptions{
+        unitTests{
+            includeAndroidResources = true
+        }
+    }
 }
 
 dependencies {
@@ -39,4 +44,7 @@ dependencies {
     testImplementation "android.arch.persistence.room:testing:$room_version"
     implementation 'com.google.android.gms:play-services-maps:16.0.0'
     implementation 'com.google.maps.android:android-maps-utils:0.5+'
+    testImplementation "org.robolectric:robolectric:4.0.1"
+    androidTestImplementation 'com.android.support.test:rules:1.0.2'
+    testImplementation "org.robolectric:shadows-supportv4:3.8"
 }
