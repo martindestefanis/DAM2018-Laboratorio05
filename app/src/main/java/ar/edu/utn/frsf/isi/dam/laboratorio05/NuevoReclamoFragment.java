@@ -14,6 +14,8 @@ import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.FileProvider;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -80,8 +82,7 @@ public class NuevoReclamoFragment extends Fragment {
 
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         reclamoDao = MyDatabase.getInstance(this.getActivity()).getReclamoDao();
 
         View v = inflater.inflate(R.layout.fragment_nuevo_reclamo, container, false);
@@ -114,74 +115,59 @@ public class NuevoReclamoFragment extends Fragment {
         tipoReclamo.setEnabled(edicionActivada);
         btnGuardar.setEnabled(edicionActivada);
 
-
-        tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+        reclamoDesc.addTextChangedListener(new TextWatcher() {
             @Override
-            public void onItemSelected(AdapterView<?> arg0, View arg1,
-                                       int position, long id) {
-                switch(Reclamo.TipoReclamo.) {
-                    case 0:
-                        button0.setClickable(true);
-                        button1.setClickable(false);
-                        break;
-                    case 1:
-                        button0.setClickable(false);
-                        button1.setClickable(true);
-                        break;
-                }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
             }
-            @Override
-            public void onNothingSelected(AdapterView<?> arg0) {
-                // TODO Auto-generated method stub
-            }});
 
-        /*tipoReclamo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
-                    btnGuardar.setClickable(false);
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(reclamoDesc.getText().length()>=8 && (!tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) &&
+                        !tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString()))){
+                    btnGuardar.setEnabled(true);
                 }
-            }
-        });
+                else{
+                    if((pathAudio == null )){
+                        btnGuardar.setEnabled(false);
+                    }
 
-
-      /*  tipoReclamo.setOnItemClickListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent,
-                                       View view, int position, long id) {
-                if (tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)) {
-                    btnGuardar.setClickable(false);
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            public void afterTextChanged(Editable s) {
 
             }
         });
 
-       /* tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+        tipoReclamo.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                /*if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO) || tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS)){
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                        tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
                     if(imagen.getDrawable()==null){
                         btnGuardar.setEnabled(false);
                     }
-                }*/
-
-           /*     tipo = (Reclamo.TipoReclamo) parent.getItemAtPosition(position);
-                if(tipo.toString().equals(Reclamo.TipoReclamo.VEREDAS) || tipo.toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO)){
-                    if(imagen.getDrawable()==null){
+                    else{
+                        btnGuardar.setEnabled(true);
+                    }
+                }
+                else{
+                    if(reclamoDesc.getText().length()<8 && pathAudio == null){
+                        Log.d("Spinner", "Entro if: "+"tam: "+reclamoDesc.getText().length()+" -- path: "+ pathAudio);
                         btnGuardar.setEnabled(false);
+                    }
+                    else{
+                        Log.d("Spinner", "No Entro if: "+"tam: "+reclamoDesc.getText().length()+" -- path: "+ pathAudio);
+                        btnGuardar.setEnabled(true);
                     }
                 }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });*/
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
 
         buscarCoord.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -204,6 +190,7 @@ public class NuevoReclamoFragment extends Fragment {
                 sacarGuardarFoto();
             }
         });
+
 
         btnGrabar.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,8 +222,6 @@ public class NuevoReclamoFragment extends Fragment {
                     terminarReproducir();
                 }
                 else{
-                    ((Button) btnReproducir).setText("PAUSAR");
-                    reproduciendo=true;
                     reproducir();
                 }
             }
@@ -316,6 +301,7 @@ public class NuevoReclamoFragment extends Fragment {
                         tvCoord.setText(R.string.texto_vacio);
                         reclamoDesc.setText(R.string.texto_vacio);
                         imagen.setImageDrawable(null);
+                        pathAudio = null;
                         getActivity().getFragmentManager().popBackStack();
                     }
                 });
@@ -356,7 +342,8 @@ public class NuevoReclamoFragment extends Fragment {
                 if (imageBitmap != null) {
                     imagen.setImageBitmap(imageBitmap);
                 }
-                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO) || tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS)){
+                if(tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                        tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
                     btnGuardar.setEnabled(true);
                 }
             }
@@ -412,16 +399,27 @@ public class NuevoReclamoFragment extends Fragment {
         mRecorder.stop();
         mRecorder.release();
         mRecorder = null;
+        if(!tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.CALLE_EN_MAL_ESTADO.toString()) ||
+                !tipoReclamo.getSelectedItem().toString().equals(Reclamo.TipoReclamo.VEREDAS.toString())){
+            btnGuardar.setEnabled(true);
+        }
     }
 
     private void reproducir() {
-        mPlayer = new MediaPlayer();
-        try {
-            mPlayer.setDataSource(pathAudio);
-            mPlayer.prepare();
-            mPlayer.start();
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "prepare() failed");
+        if(pathAudio==null){
+            Toast.makeText(getActivity().getApplicationContext(), "Error, no hay audio para reproducir", Toast.LENGTH_LONG).show();
+        }
+        else{
+            ((Button) btnReproducir).setText("PARAR");
+            reproduciendo=true;
+            mPlayer = new MediaPlayer();
+            try {
+                mPlayer.setDataSource(pathAudio);
+                mPlayer.prepare();
+                mPlayer.start();
+            } catch (IOException e) {
+                Log.e(LOG_TAG, "prepare() failed");
+            }
         }
     }
 
