@@ -46,7 +46,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(1);
+        tipoReclamo.setSelection(0);
         imagen.setImageDrawable(null);
 
         assertTrue(!btnGuardar.isEnabled());
@@ -55,7 +55,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(4);
+        tipoReclamo.setSelection(3);
         imagen.setImageDrawable(null);
 
         assertTrue(!btnGuardar.isEnabled());
@@ -77,7 +77,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(2);
+        tipoReclamo.setSelection(1);
 
         assertTrue(!btnGuardar.isEnabled());
 
@@ -85,7 +85,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(3);
+        tipoReclamo.setSelection(2);
 
         assertTrue(!btnGuardar.isEnabled());
 
@@ -93,11 +93,19 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(5);
+        tipoReclamo.setSelection(4);
 
         assertTrue(!btnGuardar.isEnabled());
 
         //SPINNER = RUIDOS_MOLESTOS
+        tvCoord.setText("1;1");
+        reclamoDesc.setText("");
+        mail.setText("dam@facu.com");
+        tipoReclamo.setSelection(5);
+
+        assertTrue(!btnGuardar.isEnabled());
+
+        //SPINNER = OTROS
         tvCoord.setText("1;1");
         reclamoDesc.setText("");
         mail.setText("dam@facu.com");
@@ -122,7 +130,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("desc");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(2);
+        tipoReclamo.setSelection(1);
 
         assertTrue(!btnGuardar.isEnabled());
 
@@ -130,7 +138,7 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("desc");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(3);
+        tipoReclamo.setSelection(2);
 
         assertTrue(!btnGuardar.isEnabled());
 
@@ -138,11 +146,19 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("desc");
         mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(5);
+        tipoReclamo.setSelection(4);
 
         assertTrue(!btnGuardar.isEnabled());
 
         //SPINNER = RUIDOS_MOLESTOS
+        tvCoord.setText("1;1");
+        reclamoDesc.setText("desc");
+        mail.setText("dam@facu.com");
+        tipoReclamo.setSelection(5);
+
+        assertTrue(!btnGuardar.isEnabled());
+
+        //SPINNER = OTROS
         tvCoord.setText("1;1");
         reclamoDesc.setText("desc");
         mail.setText("dam@facu.com");
@@ -167,19 +183,27 @@ public class NuevoReclamoFragmentRobolectricTest {
         tvCoord.setText("1;1");
         reclamoDesc.setText("Descripción Reclamo");
         mail.setText("dam@facu.com");
+        tipoReclamo.setSelection(1);
+
+        assertTrue(btnGuardar.isEnabled());
+
+        //SPINNER = ILUMINACION
+        tvCoord.setText("1;1");
+        reclamoDesc.setText("Descripción Reclamo");
+        mail.setText("dam@facu.com");
         tipoReclamo.setSelection(2);
 
         assertTrue(btnGuardar.isEnabled());
 
-        /*//SPINNER = ILUMINACION
-        tvCoord.setText("1;1");
-        reclamoDesc.setText("Descripción Reclamo");         ¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡¡ ESTE NO FUNCA HAY QUE VER QUE ONDA !!!!!!!!!!!!!!!!!!!!!
-        mail.setText("dam@facu.com");
-        tipoReclamo.setSelection(3);
-
-        assertTrue(btnGuardar.isEnabled());*/
-
         //SPINNER = RESIDUOS
+        tvCoord.setText("1;1");
+        reclamoDesc.setText("Descripción Reclamo");
+        mail.setText("dam@facu.com");
+        tipoReclamo.setSelection(4);
+
+        assertTrue(btnGuardar.isEnabled());
+
+        //SPINNER = RUIDOS_MOLESTOS
         tvCoord.setText("1;1");
         reclamoDesc.setText("Descripción Reclamo");
         mail.setText("dam@facu.com");
