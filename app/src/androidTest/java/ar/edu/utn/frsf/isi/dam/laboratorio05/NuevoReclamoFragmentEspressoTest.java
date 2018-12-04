@@ -1,16 +1,14 @@
 package ar.edu.utn.frsf.isi.dam.laboratorio05;
 
-import android.app.Activity;
-import android.app.Instrumentation;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.intent.rule.IntentsTestRule;
+import android.support.test.espresso.UiController;
+import android.support.test.espresso.ViewAction;
 import android.support.test.filters.LargeTest;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
+import android.view.View;
+import android.widget.TextView;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -19,16 +17,15 @@ import org.junit.runner.RunWith;
 import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
-import static android.support.test.espresso.intent.Intents.intended;
-import static android.support.test.espresso.intent.Intents.intending;
-import static android.support.test.espresso.intent.matcher.IntentMatchers.toPackage;
+import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFrom;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isEnabled;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.hamcrest.Matchers.hasToString;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -36,7 +33,6 @@ public class NuevoReclamoFragmentEspressoTest {
 
     @Rule
     public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(MainActivity.class);
-    public IntentsTestRule<MainActivity> intentsRule = new IntentsTestRule<>(MainActivity.class);
 
     @Before
     public void setup() {
@@ -48,60 +44,119 @@ public class NuevoReclamoFragmentEspressoTest {
     }
 
     @Test
-    public void testHayFoto(){
-        onView(withId(R.id.reclamo_coord)).perform(typeText("1;1"));
-        onView(withId(R.id.reclamo_mail)).perform(typeText("dam@facu.com"));
-        onView(withId(R.id.reclamo_desc)).perform(typeText(""));
-        onView(withId(R.id.reclamo_tipo)).perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(1).perform(click());
+    public void testNoHayFoto(){
+        onView(withId(R.id.reclamo_coord)).perform(setText("1;1"));
+        onView(withId(R.id.reclamo_mail)).perform(setText("dam@facu.com"));
+        onView(withId(R.id.reclamo_desc)).perform(setText(""));
 
-        // Create a bitmap we can use for our simulated camera image
-        Bitmap icon = BitmapFactory.decodeResource(
-                InstrumentationRegistry.getTargetContext().getResources(),
-                R.mipmap.ic_launcher);
+        //SPINNER = VEREDAS
+        onData(hasToString(startsWith("VEREDAS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
 
-        // Build a result to return from the Camera app
-        Intent resultData = new Intent();
-        resultData.putExtra("data", icon);
-        Instrumentation.ActivityResult result = new Instrumentation.ActivityResult(Activity.RESULT_OK, resultData);
-
-        // Stub out the Camera. When an intent is sent to the Camera, this tells Espresso to respond
-        // with the ActivityResult we just created
-        intending(toPackage("com.android.camera2")).respondWith(result);
-
-        // Now that we have the stub in place, click on the button in our app that launches into the Camera
-        onView(withId(R.id.btnFoto)).perform(click());
-
-        // We can also validate that an intent resolving to the "camera" activity has been sent out by our app
-        intended(toPackage("com.android.camera2"));
-
-        onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
+        //SPINNER = CALLE_EN_MAL_ESTADO
+        onData(hasToString(startsWith("CALLE"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
     }
 
     @Test
     public void testHayDesc(){
-        onView(withId(R.id.reclamo_coord)).perform(typeText("1;1"));
-        onView(withId(R.id.reclamo_mail)).perform(typeText("dam@facu.com"));
-        onView(withId(R.id.reclamo_desc)).perform(typeText("Descripción Reclamo"));
+        onView(withId(R.id.reclamo_coord)).perform(setText("1;1"));
+        onView(withId(R.id.reclamo_mail)).perform(setText("dam@facu.com"));
+        onView(withId(R.id.reclamo_desc)).perform(setText("Descripción Reclamo"));
 
         //SPINNER = SEMAFOROS
-        onView(withId(R.id.reclamo_tipo)).perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(2).perform(click());
+        onData(hasToString(startsWith("SEMAFOROS"))).perform(click());
         onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
 
         //SPINNER = ILUMINACION
-        onView(withId(R.id.reclamo_tipo)).perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(3).perform(click());
+        onData(hasToString(startsWith("ILUMINACION"))).perform(click());
         onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
 
         //SPINNER = RESIDUOS
-        onView(withId(R.id.reclamo_tipo)).perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(5).perform(click());
+        onData(hasToString(startsWith("RESIDUOS"))).perform(click());
         onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
 
         //SPINNER = RUIDOS_MOLESTOS
-        onView(withId(R.id.reclamo_tipo)).perform(click());
-        onData(allOf(is(instanceOf(String.class)))).atPosition(6).perform(click());
+        onData(hasToString(startsWith("RUIDOS"))).perform(click());
         onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
+
+        //SPINNER = OTROS
+        onData(hasToString(startsWith("OTRO"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(isEnabled()));
+    }
+
+    @Test
+    public void testNoHayDesc(){
+        onView(withId(R.id.reclamo_coord)).perform(setText("1;1"));
+        onView(withId(R.id.reclamo_mail)).perform(setText("dam@facu.com"));
+        onView(withId(R.id.reclamo_desc)).perform(setText(""));
+
+        //SPINNER = SEMAFOROS
+        onData(hasToString(startsWith("SEMAFOROS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = ILUMINACION
+        onData(hasToString(startsWith("ILUMINACION"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = RESIDUOS
+        onData(hasToString(startsWith("RESIDUOS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = RUIDOS_MOLESTOS
+        onData(hasToString(startsWith("RUIDOS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = OTROS
+        onData(hasToString(startsWith("OTRO"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+    }
+
+    @Test
+    public void testDescMenorA8(){
+        onView(withId(R.id.reclamo_coord)).perform(setText("1;1"));
+        onView(withId(R.id.reclamo_mail)).perform(setText("dam@facu.com"));
+        onView(withId(R.id.reclamo_desc)).perform(setText("<8"));
+
+        //SPINNER = SEMAFOROS
+        onData(hasToString(startsWith("SEMAFOROS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = ILUMINACION
+        onData(hasToString(startsWith("ILUMINACION"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = RESIDUOS
+        onData(hasToString(startsWith("RESIDUOS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = RUIDOS_MOLESTOS
+        onData(hasToString(startsWith("RUIDOS"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+
+        //SPINNER = OTROS
+        onData(hasToString(startsWith("OTRO"))).perform(click());
+        onView(withId(R.id.btnGuardar)).check(matches(not(isEnabled())));
+    }
+
+    //typeText no anda, declaro mi propio ViewAction para setear un texto
+    public static ViewAction setText(final String value){
+        return new ViewAction() {
+            @SuppressWarnings("unchecked")
+            @Override
+            public Matcher<View> getConstraints() {
+                return allOf(isDisplayed(), isAssignableFrom(TextView.class));
+            }
+
+            @Override
+            public void perform(UiController uiController, View view) {
+                ((TextView) view).setText(value);
+            }
+
+            @Override
+            public String getDescription() {
+                return "replace text";
+            }
+        };
     }
 }
