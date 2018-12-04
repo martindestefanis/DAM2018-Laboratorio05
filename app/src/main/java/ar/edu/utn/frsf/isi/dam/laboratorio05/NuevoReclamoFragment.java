@@ -72,7 +72,6 @@ public class NuevoReclamoFragment extends Fragment {
     private MediaPlayer mPlayer = null;
     private Boolean grabando = false;
     private Boolean reproduciendo = false;
-    private Reclamo.TipoReclamo tipo;
 
     private ArrayAdapter<Reclamo.TipoReclamo> tipoReclamoAdapter;
 
